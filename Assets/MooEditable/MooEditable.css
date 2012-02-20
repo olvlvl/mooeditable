@@ -179,3 +179,9 @@
 .mooeditable-ui-button-overlay .overlay-content{
 	padding: 10px;
 }
+
+.mooeditable-resizer {
+	height: 8px;
+	background-color: #eee;
+	border-top: 1px solid #ddd;
+}

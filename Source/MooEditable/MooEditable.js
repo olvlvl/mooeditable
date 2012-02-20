@@ -132,7 +132,10 @@ this.MooEditable = new Class({
 				height: dimensions.y
 			}
 		});
-		
+
+		// Build resizer
+		this.resizer = new Element('div.mooeditable-resizer')
+
 		this.toolbar = new MooEditable.UI.Toolbar({
 			onItemAction: function(){
 				var args = Array.from(arguments);
@@ -176,7 +179,8 @@ this.MooEditable = new Class({
 		this.textarea.setStyle('display', 'none');
 		
 		this.iframe.setStyle('display', '').inject(this.textarea, 'before');
-		
+		this.resizer.inject(this.textarea, 'after');
+
 		Object.each(this.dialogs, function(action, name){
 			Object.each(action, function(dialog){
 				document.id(dialog).inject(self.iframe, 'before');
@@ -1580,5 +1584,52 @@ Element.implement({
 	}
 
 });
+
+var resizingTarget = null
+	, resizingTargetH = null
+	, resizingStartY = null
+
+function resizerOnMouseMove(ev) {
+
+	resizingTarget.setStyle('height', Math.max(resizingTargetH + ev.client.y - resizingStartY, 100))
+}
+
+function resizerDone(ev) {
+
+	window.removeEvent('mousemove', resizerOnMouseMove)
+	window.removeEvent('mouseup', resizerDone)
+
+	if (resizingTarget.tagName == 'IFRAME')
+	{
+		resizingTarget.setStyle('visibility', '')
+	}
+
+	resizingTarget = null
+}
+
+window.addEvent('mousedown:relay(.mooeditable-resizer)', function(ev, el) {
+
+	ev.preventDefault()
+
+	resizingTarget = el.getPrevious()
+
+	if (resizingTarget.getStyle('display') == 'none')
+	{
+		resizingTarget = resizingTarget.getPrevious()
+	}
+
+	resizingTargetH = resizingTarget.getSize().y
+	resizingStartY = ev.client.y
+
+	if (resizingTarget.tagName == 'IFRAME')
+	{
+		resizingTarget.setStyle('visibility', 'hidden')
+	}
+
+	window.addEvents({
+		mousemove: resizerOnMouseMove,
+		mouseup: resizerDone
+	})
+})
 
 })();
